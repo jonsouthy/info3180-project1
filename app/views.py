@@ -45,7 +45,23 @@ def upload():
             return redirect(url_for('home'))
 
     return render_template('upload.html', form=uForm)
+    
+@app.route('/files')
+def files():
+    if not session.get('logged in'):
+        abort(401)
+        
+    load_files_list = get_uploaded_images()
+    return render_template('files.html', uploaded_images = load_files_list )
+    
 
+def get_uploaded_images():
+    images =[]
+    ifiles = os.listdir('./app/static/uploads/')
+    for file in ifiles:
+        if file.split('.')[-1] in allowedUploads:
+            images.append(file)
+    return images
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():

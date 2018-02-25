@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block main %}
+
+<div class="iview">
+    {% uploaded images %}
+    <div><img src="{{url_for('static',filename='uploads/'+images)}}"/></div>
+    {% endfor %}
+</div>
+
+{% endblock %}
