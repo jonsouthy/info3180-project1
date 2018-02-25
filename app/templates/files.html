@@ -3,7 +3,7 @@
 {% block main %}
 
 <div class="iview">
-    {% uploaded images %}
+    {% for images in uploaded_images %}
     <div><img src="{{url_for('static',filename='uploads/'+images)}}"/></div>
     {% endfor %}
 </div>
