@@ -4,11 +4,12 @@ Jinja2 Documentation:    http://jinja.pocoo.org/2/documentation/
 Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
-import os
-from app import app,uploadFolder, allowedUploads
-from flask import render_template, request, redirect, url_for, flash, session, abort
+import os, random, datetime, uuid
+from app import app, db
+from flask import render_template, request, redirect, url_for, flash, session, abort, jsonify, make_response
 from werkzeug.utils import secure_filename
-from form import uploadForm
+from form import signForm
+from models import UserProfile
 
 
 ###
@@ -20,6 +21,48 @@ def home():
     """Render website's home page."""
     return render_template('home.html')
 
+@app.route('/profile',methods=["GET","POST"])
+def profile():
+
+    # Instantiate your form class
+    form = signForm()
+    # Validate file upload on submit
+    if request.method == 'POST':
+        ff = app.config['UPLOAD_FOLDER']
+        # Get form data
+        if form.validate_on_submit():
+            fname = form.fname.data
+            lname = form.lname.data
+            gender = form.gender.data
+            email = form.email.data
+            location = form.location.data
+            biography = form.biography.data
+            photo = form.upload.data
+            
+            created_on = datetime.date.today()
+            userid = random_id()
+            
+            newuser = UserProfile(userid=userid, fname = fname, lname =lname, gender=gender, email=email,
+                        location=location, biography=biography,created_on=created_on,photo=photo)
+            
+            db.session.add(newuser)
+            db.session.commit()
+            
+            flash('Created Successfully', 'success')
+            return redirect(url_for('profile'))
+
+    return render_template('signup.html', form=form)
+    
+
+    
+@app.route('/profiles',methods=["GET","POST"])
+def profiles():
+    
+    users = UserProfile.query.all()
+    if request.method == "GET":
+        ff = app.config['UPLOAD_FOLDER']
+        return render_template("userlist.html",users=users)
+
 
 @app.route('/about/')
 def about():
@@ -27,63 +70,19 @@ def about():
     return render_template('about.html', name="Mary Jane")
 
 
-@app.route('/upload', methods=['POST', 'GET'])
-def upload():
-    if not session.get('logged_in'):
-        abort(401)
-
-    # Instantiate your form class
-    uForm = uploadForm()
-    # Validate file upload on submit
-    if request.method == 'POST':
-        # Get file data and save to your uploads folder
-        if uForm.validate_on_submit():
-            File = uForm.upload.data
-            Filename = secure_filename(File.filename)
-            File.save(os.path.join(uploadFolder,Filename))
-            flash('File Saved', 'success')
-            return redirect(url_for('home'))
-
-    return render_template('upload.html', form=uForm)
     
-@app.route('/files')
-def files():
-    if not session.get('logged_in'):
-        abort(401)
-        
-    load_files_list = get_uploaded_images()
-    return render_template('files.html', uploaded_images = load_files_list )
+@app.route('/profile/userid')
+def prof():
+    user = UserProfile.query.filter_by(userid=userid).first()
     
-
-def get_uploaded_images():
-    images =[]
-    ifiles = os.listdir('./app/static/uploads/')
-    for file in ifiles:
-        if file.split('.')[-1] in allowedUploads:
-            images.append(file)
-    return images
-
-@app.route('/login', methods=['POST', 'GET'])
-def login():
-    error = None
-    if request.method == 'POST':
-        if request.form['username'] != app.config['USERNAME'] or request.form['password'] != app.config['PASSWORD']:
-            error = 'Invalid username or password'
-        else:
-            session['logged_in'] = True
-            
-            flash('You were logged in', 'success')
-            return redirect(url_for('upload'))
-    return render_template('login.html', error=error)
-
-
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    flash('You were logged out', 'success')
-    return redirect(url_for('home'))
-
-
+    if request.method == "GET":
+        ff = app.config['UPLOAD_FOLDER']
+        return render_template("userprof.html", user=user)
+    
+def random_id():
+    rid = uuid.uuid4()
+    return rid
+    
 ###
 # The functions below should be applicable to all Flask apps.
 ###

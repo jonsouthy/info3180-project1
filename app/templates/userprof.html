@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %} User Profile {% endblock %}
+
+{% block main %}
+
+<div class="profile">
+    {{ user.photo }}
+
+    <div class="info">
+        <div>{{ user.first_name}} {{ user.last_name }}</div> 
+        </br>
+        
+        {{ user.email }}
+        </br>{{ user.gender }} 
+        </br>{{ user.age }}</br>
+        
+        <p>About Me</p>
+        {{ user.biography }}
+        
+        <button type="submit" name="smessage">Send Message</button>
+        <button type="submit" name="follow">Follow</button>
+    </div>
+</div>
+
+{% endblock %}

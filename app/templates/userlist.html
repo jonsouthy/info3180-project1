@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %} List of Users {% endblock %}
+
+{% block main %}
+
+{% for user in users %}
+    <div class="profile">
+       {{user.photo}}
+        
+        <div class="info">
+            <b>Username:</b> {{ user.username }} <br/>
+            <b>Gender:</b> {{ user.gender }} <br/>
+            <b>Location:</b> {{ user.location }} <br/><br/>
+            
+            
+            <button type="submit" name="view">View Profile</button>
+        </div>
+    </div>
+    
+    <br/>
+{% endfor %}
+
+{% endblock %}
